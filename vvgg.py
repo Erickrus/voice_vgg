@@ -28,6 +28,8 @@ for filename in waves:
   paddedWave = np.concatenate((wv[1], np.zeros(MAX_SIZE-waveLen)))
   splitSize = MAX_SIZE // SPLIT_NUM
   halfSplitSize = MAX_SIZE // SPLIT_NUM // 2
+
+  x, y, initialized = None, None, False
   
   for i in range(SPLIT_NUM):
     # split the wave into basic unit
@@ -38,10 +40,23 @@ for filename in waves:
     # get the positive part, and move the display position to next 0.5
     currFft  = currFft[:halfSplitSize] / 1e7
     currFreq = currFreq[:halfSplitSize] + i * 0.5
+    if not initialized:
+      x = currFreq.copy()
+      y = currFft.real.copy()
+      initialized = True
+    else:
+      x = np.concatenate([x, currFreq])
+      y = np.concatenate([y, currFft.real])
     
     # just plot the real part
-    plt.plot(currFreq, currFft.real)
+    # plt.plot(currFreq, currFft.real)
 
-  plt.xlim(left=0, right=SPLIT_NUM * 0.5)
-  plt.ylim(top=0.05, bottom=0)
+  y = np.sqrt(np.abs(y))
+  x = x * 2
+  plt.fill_between(x, y)
+  plt.plot(x, y)
+
+  plt.xlim(left=0, right=SPLIT_NUM * 0.5 * 1.5 )
+  plt.ylim(top=0.10, bottom=0)
   plt.savefig("output/%s.png" % filename)
+
